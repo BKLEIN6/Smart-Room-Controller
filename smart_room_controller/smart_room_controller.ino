@@ -76,6 +76,7 @@ void blinkLED() {
 
 void button1() {
   if (buttonPress1 == false) {
+    hueLamp();
     buttonState1 = !buttonState1;
     Serial.printf("%i blinks %i ENC\n", BLINK, buttonState1);
     delay(DELAY);
@@ -121,7 +122,7 @@ void encoder() {  //encoder position and mapping
       Serial.printf("%i, %i\n", position, briPos);
       lastPos = position;
     }
-    hueLamp();
+//    hueLamp();
   }
 }
 
