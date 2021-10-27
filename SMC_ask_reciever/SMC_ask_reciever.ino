@@ -27,7 +27,7 @@ const int transmit_pin = 2;
 const int receive_pin = 8;
 const int transmit_en_pin = 1;
 const int DELAY = 250;
-const int ENCSW = 21;
+const int ENCSW = 4;
 const int HSLSW = 3;
 const int COLSW = 7;
 const int WPWSW = 6;
@@ -43,7 +43,6 @@ int position;
 int lastPos;
 int briPos;
 int WEMO[5];
-int LAMP[5];
 int RAINBOW[] = {HueRed, HueOrange, HueYellow, HueGreen, HueBlue, HueIndigo, HueViolet};
 
 bool buttonPress1;
@@ -272,7 +271,7 @@ void button5() {
     Serial.printf("%i Hue Select %i\n", buttonState5, i);
     delay(DELAY);
     if (i > 6) {
-      i = 0;
+      i = 1;
       allStatus();
     }
   }
@@ -304,7 +303,7 @@ void encoder() {  //encoder position and mapping
 }
 
 void hueLamp() {
-  setHue(LAMP[i], buttonState1, RAINBOW[c], briPos, 255);
+  setHue(i, buttonState1, RAINBOW[c], briPos, 255);
   if (buttonState1 == false) {
     allStatus();
   }
