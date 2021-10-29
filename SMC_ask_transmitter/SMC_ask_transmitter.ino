@@ -10,9 +10,9 @@
 
 #include <VirtualWire.h>
 
-const int led_pin = 13;
+const int led_pin = 8;
 const int transmit_pin = 7;
-const int receive_pin = 8;
+const int receive_pin = 9;
 const int transmit_en_pin = 1;
 const int HPWSW = 6;
 const int HCSSW = 5;

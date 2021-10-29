@@ -22,18 +22,21 @@
 #define SEALEVELPRESSURE_HPA (1013.25)
 #define SCREEN_ADDRESS 0x3C
 
-const int LED = 16;
-const int transmit_pin = 2;
-const int receive_pin = 8;
 const int transmit_en_pin = 1;
-const int DELAY = 250;
-const int ENCSW = 4;
+const int transmit_pin = 2;
 const int HSLSW = 3;
-const int COLSW = 7;
-const int WPWSW = 6;
+const int ENCSW = 4;
 const int WSCSW = 5;
+const int WPWSW = 6;
+const int COLSW = 7;
+const int receive_pin = 8;
 const int ENCA = 14;
 const int ENCB = 15;
+const int LED = 16;
+const int EMOSW = 20;
+const int DELAY = 250;
+
+
 
 
 int i; //hue select
@@ -55,6 +58,8 @@ bool buttonPress4;
 bool buttonState4;
 bool buttonPress5;
 bool buttonState5;
+bool buttonPress6;
+bool buttonState6;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
@@ -98,14 +103,21 @@ void setup() {
   buttonState4 = false;
   buttonPress5 = true;
   buttonState5 = false;
+  buttonPress6 = true;
+  buttonState6 = false;
   pinMode(ENCSW, INPUT_PULLUP);
   pinMode(COLSW, INPUT_PULLUP);
   pinMode(WPWSW, INPUT_PULLUP);
   pinMode(WSCSW, INPUT_PULLUP);
   pinMode(HSLSW, INPUT_PULLUP);
+  pinMode(EMOSW, INPUT_PULLUP);
+
   c = 0;
   w = 0;
   i = 0;
+
+  position = 0;
+  lastPos = 0;
   myEnc.write(48);
 
   Ethernet.begin(mac);
@@ -125,7 +137,9 @@ void loop() {
   button4();
   buttonPress5 = digitalRead(HSLSW);
   button5();
-  encoder();
+  buttonPress6 = digitalRead(EMOSW);
+  button6();
+  encoderPos();
   checkMessage();
 }
 
@@ -283,23 +297,37 @@ void click5() {
   }
 }
 
-
-void encoder() {  //encoder position and mapping
-  position = myEnc.read();
-  if (buttonState1 == true) {
-    if (position < 0) {
-      position = 0;
-    }
-    if (position > 96) {
-      position = 96;
-    }
-    briPos = map(position, 0, 96, 0, 255);
-    if (position != lastPos) {
-      Serial.printf("%i, %i\n", position, briPos);
-      lastPos = position;
-    }
-    //    hueLamp();
+void button6() {
+  if (buttonPress6 == false) {
+    buttonState6 = !buttonState6;
+    delay(5000);
+    Serial.printf("CALM DOWN %i\n", buttonState6);
+    calmDown();
+    calmDownStatus();
   }
+  click6();
+}
+
+void click6() {
+  if (buttonState6 == true) {
+  }
+}
+
+
+void encoderPos() {  //encoder position and mapping
+  position = myEnc.read();
+  if (position < 0) {
+    position = 0;
+  }
+  if (position > 96) {
+    position = 96;
+  }
+  briPos = map(position, 0, 96, 0, 255);
+  if (position != lastPos) {
+    Serial.printf("%i, %i\n", position, briPos);
+    lastPos = position;
+  }
+  //    hueLamp();
 }
 
 void hueLamp() {
@@ -311,6 +339,18 @@ void hueLamp() {
     allStatus();
   }
 }
+
+void calmDown() {
+  for (i = 1; i < 6; i++) {
+    setHue(i, buttonState6, HueBlue, 255, 255);
+    if (buttonState1 == false) {
+      calmDownStatus();
+    }
+    else {
+    }
+  }
+}
+
 
 void wemoPower() {
   if (buttonState3 == true) {
@@ -332,5 +372,16 @@ void allStatus() {
   display.setCursor(0, 0);
   display.setRotation(0);
   display.printf(" Hue %i selected\n Hue color %i selected\n Hue %i %i\n Wemo %i selected\n Wemo %i %i\n", i, c, i, buttonState1, w, w, buttonState3);
+  display.display();
+}
+
+void calmDownStatus() {
+  Serial.printf("CALM\n DOWN\n");
+  display.clearDisplay();
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.setRotation(0);
+  display.printf("CALM\n DOWN\n");
   display.display();
 }
