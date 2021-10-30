@@ -25,7 +25,7 @@
 const int transmit_en_pin = 1;
 const int transmit_pin = 2;
 const int HSLSW = 3;
-const int ENCSW = 4;
+const int HPSSW = 4;
 const int WSCSW = 5;
 const int WPWSW = 6;
 const int COLSW = 7;
@@ -34,6 +34,7 @@ const int ENCA = 14;
 const int ENCB = 15;
 const int LED = 16;
 const int EMOSW = 20;
+const int ENCSW = 21;
 const int DELAY = 250;
 
 
@@ -60,6 +61,8 @@ bool buttonPress5;
 bool buttonState5;
 bool buttonPress6;
 bool buttonState6;
+bool buttonPress7;
+bool buttonState7;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
@@ -92,7 +95,7 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-  pinMode(LED, OUTPUT);
+  
   buttonPress1 = true;
   buttonState1 = false;
   buttonPress2 = true;
@@ -105,12 +108,16 @@ void setup() {
   buttonState5 = false;
   buttonPress6 = true;
   buttonState6 = false;
-  pinMode(ENCSW, INPUT_PULLUP);
+  buttonPress7 = true;
+  buttonState7 = false;
+  pinMode(LED, OUTPUT);
+  pinMode(HPSSW, INPUT_PULLUP);
   pinMode(COLSW, INPUT_PULLUP);
   pinMode(WPWSW, INPUT_PULLUP);
   pinMode(WSCSW, INPUT_PULLUP);
   pinMode(HSLSW, INPUT_PULLUP);
   pinMode(EMOSW, INPUT_PULLUP);
+  pinMode(ENCSW, INPUT_PULLUP);
 
   c = 0;
   w = 0;
@@ -124,8 +131,10 @@ void setup() {
   delay(200);          //ensure Serial Monitor is up and running
 }
 
-void loop() {
-  buttonPress1 = digitalRead(ENCSW);
+void loop() {  
+  checkMessage();  
+  encoderPos();
+  buttonPress1 = digitalRead(HPSSW);
   button1();
   buttonPress2 = digitalRead(COLSW);
   button2();
@@ -137,8 +146,10 @@ void loop() {
   button5();
   buttonPress6 = digitalRead(EMOSW);
   button6();
-  encoderPos();
-  checkMessage();
+  buttonPress7 = digitalRead(ENCSW);
+  button7();
+
+
 }
 
 
@@ -196,7 +207,8 @@ void checkMessage() {
   if (vw_get_message(buf, &buflen)) {
     digitalWrite(LED, HIGH); // Flash a light to show received good message
     // Message with a good checksum received, dump it.
-    //    Serial.print("Got: ");
+        Serial.printf("Got: \n");
+        delay(DELAY);
 
     Serial.printf("%x", buf[0]);
     digitalWrite(LED, LOW);
@@ -311,6 +323,22 @@ void click6() {
   }
 }
 
+void button7() {
+  if (buttonPress7 == false) {
+    buttonState7 = !buttonState7;
+    allTheLights();
+    delay(DELAY);
+    Serial.printf("All lights on/off %i\n", buttonState7);
+
+  }
+  click7();
+}
+
+void click7() {
+  if (buttonState7 == true) {
+  }
+}
+
 
 void encoderPos() {  //encoder position and mapping
   position = myEnc.read();
@@ -349,7 +377,16 @@ void calmDown() {
     }
   }
 }
-
+void allTheLights() {
+  for (i = 1; i < 6; i++) {
+    setHue(i, buttonState7, RAINBOW[c] , briPos, 0);
+    if (buttonState7 == false) {
+      calmDownStatus();
+    }
+    else {
+    }
+  }
+}
 
 void wemoPower() {
   if (buttonState3 == true) {
