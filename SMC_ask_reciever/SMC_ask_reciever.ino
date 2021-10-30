@@ -122,8 +122,6 @@ void setup() {
 
   Ethernet.begin(mac);
   delay(200);          //ensure Serial Monitor is up and running
-  //  printIP();
-  //  Serial.printf("LinkStatus: %i  \n", Ethernet.linkStatus());
 }
 
 void loop() {
@@ -324,6 +322,7 @@ void encoderPos() {  //encoder position and mapping
   }
   briPos = map(position, 0, 96, 0, 255);
   if (position != lastPos) {
+    allStatus();
     Serial.printf("%i, %i\n", position, briPos);
     lastPos = position;
   }
@@ -365,13 +364,13 @@ void wemoPower() {
 }
 
 void allStatus() {
-  Serial.printf(" Hue %i selected\n Hue color %i selected\n Hue %i %i\n Wemo %i selected\n Wemo %i %i\n", i, c, i, buttonState1, w, w, buttonState3);
+  Serial.printf(" Hue %i selected\n Hue color %i selected\n Hue %i %i\n Hue Brightness %i\n Wemo %i selected\n Wemo %i %i\n", i, c, i, buttonState1, briPos, w, w, buttonState3);
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
   display.setRotation(0);
-  display.printf(" Hue %i selected\n Hue color %i selected\n Hue %i %i\n Wemo %i selected\n Wemo %i %i\n", i, c, i, buttonState1, w, w, buttonState3);
+  display.printf(" Hue %i selected\n Hue color %i selected\n Hue %i %i\n Hue Brightness %i\n Wemo %i selected\n Wemo %i %i\n", i, c, i, buttonState1, briPos, w, w, buttonState3);
   display.display();
 }
 
