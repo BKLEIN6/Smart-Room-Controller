@@ -1,13 +1,9 @@
-// transmitter.pde
-//
-// Simple example of how to use VirtualWire to transmit messages
-// Implements a simplex (one-way) transmitter with an TX-C1 module
-//
-// See VirtualWire.h for detailed API docs
-// Author: Mike McCauley (mikem@airspayce.com)
-// Copyright (C) 2008 Mike McCauley
-// $Id: transmitter.pde,v 1.3 2009/03/30 00:07:24 mikem Exp $
-
+/*
+   Project: smart room controller Transmitter
+   Description: RF smart room controller main hub
+   Author: Ben Klein
+   Date: 25-OCT-2021
+*/
 #include <VirtualWire.h>
 
 const int led_pin = 8;
@@ -42,8 +38,6 @@ void setup() {
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(2000);       // Bits per sec
 
-  pinMode(led_pin, OUTPUT);
-
   buttonPress1 = true;
   buttonState1 = false;
   buttonPress2 = true;
@@ -54,11 +48,13 @@ void setup() {
   buttonState4 = false;
   buttonPress5 = true;
   buttonState5 = false;
+  
   pinMode(HPWSW, INPUT_PULLUP);
   pinMode(HCSSW, INPUT_PULLUP);
   pinMode(WEPSW, INPUT_PULLUP);
   pinMode(WESSW, INPUT_PULLUP);
   pinMode(HLSSW, INPUT_PULLUP);
+  pinMode(led_pin, OUTPUT);
 }
 
 byte count = 1;
@@ -82,7 +78,7 @@ void msg1() {
   vw_send((uint8_t *)msg, 1);
   vw_wait_tx(); // Wait until the whole message is gone
   digitalWrite(led_pin, LOW);
-  Serial.printf("Hue Lights on/off Sent\n");
+  Serial.printf("Message 1 Sent\n");
   delay(1000);
 }
 
@@ -92,7 +88,7 @@ void msg2() {
   vw_send((uint8_t *)msg, 1);
   vw_wait_tx(); // Wait until the whole message is gone
   digitalWrite(led_pin, LOW);
-  Serial.printf("Hue Color Select Sent\n");
+  Serial.printf("Message 2 Sent\n");
   delay(1000);
 }
 
@@ -102,7 +98,7 @@ void msg3() {
   vw_send((uint8_t *)msg, 2);
   vw_wait_tx(); // Wait until the whole message is gone
   digitalWrite(led_pin, LOW);
-  Serial.printf("Wemo Power sent\n");
+  Serial.printf("Message 3 Sent\n");
   delay(1000);
 }
 
@@ -112,7 +108,7 @@ void msg4() {
   vw_send((uint8_t *)msg, 1);
   vw_wait_tx(); // Wait until the whole message is gone
   digitalWrite(led_pin, LOW);
-  Serial.printf("Wemo Select Sent\n");
+  Serial.printf("Message 4 Sent\n");
   delay(1000);
 }
 
@@ -123,27 +119,15 @@ void msg5() {
   vw_send((uint8_t *)msg, 1);
   vw_wait_tx(); // Wait until the whole message is gone
   digitalWrite(led_pin, LOW);
-  Serial.printf("Hue Light Select Sent\n");
+  Serial.printf("Message 5 Sent\n");
   delay(1000);
 }
-
-//void originalMessage() {
-//  char msg[7] = {'h', 'e', 'l', 'l', 'o', ' ', '#'};
-//  msg[6] = count;
-//  digitalWrite(led_pin, HIGH); // Flash a light to show transmitting
-//  vw_send((uint8_t *)msg, 7);
-//  vw_wait_tx(); // Wait until the whole message is gone
-//  digitalWrite(led_pin, LOW);
-//  Serial.printf("Message Sent\n0");
-//  delay(1000);
-//  count = count + 1;
-//}
 
 void button1() {
   if (buttonPress1 == false) {
     msg1();
     buttonState1 = !buttonState1;
-    Serial.printf("Hue Lights Power Pressed, buttonState1 is now: %i ENC\n", buttonState1);
+    Serial.printf("buttonState1 is now: %i\n", buttonState1);
     delay(DELAY);
   }
   click1();
@@ -158,7 +142,7 @@ void button2() {
   if (buttonPress2 == false) {
     msg2();
     buttonState2 = !buttonState2;
-    Serial.printf("GREEN Pressed, buttonState2 is now: %i ENC\n", buttonState2);
+    Serial.printf("buttonState2 is now: %i\n", buttonState2);
     delay(DELAY);
   }
   click2();
@@ -173,7 +157,7 @@ void button3() {
   if (buttonPress3 == false) {
     msg3();
     buttonState3 = !buttonState3;
-    Serial.printf("BLACK Pressed, buttonState3 is now: %i ENC\n", buttonState3);
+    Serial.printf("buttonState3 is now: %i\n", buttonState3);
     delay(DELAY);
   }
   click3();
@@ -188,7 +172,7 @@ void button4() {
   if (buttonPress4 == false) {
     msg4();
     buttonState4 = !buttonState4;
-    Serial.printf("RED Pressed, buttonState4 is now: %i ENC\n", buttonState4);
+    Serial.printf("buttonState4 is now: %i\n", buttonState4);
     delay(DELAY);
   }
   click4();
@@ -203,7 +187,7 @@ void button5() {
   if (buttonPress5 == false) {
     msg5();
     buttonState5 = !buttonState5;
-    Serial.printf("Yellow Pressed, buttonState5 is now: %i ENC\n", buttonState5);
+    Serial.printf("buttonState5 is now: %i\n", buttonState5);
     delay(DELAY);
   }
   click5();

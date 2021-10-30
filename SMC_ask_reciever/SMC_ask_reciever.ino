@@ -30,16 +30,14 @@ const int WSCSW = 5;
 const int WPWSW = 6;
 const int COLSW = 7;
 const int receive_pin = 8;
-const int ENCA = 14;
-const int ENCB = 15;
+const int ENCB = 14;
+const int ENCA = 15;
 const int LED = 16;
 const int EMOSW = 20;
 const int ENCSW = 21;
 const int DELAY = 250;
 
-
-
-
+int s;
 int i; //hue select
 int c; //hue color
 int w; //wemoselect
@@ -77,7 +75,7 @@ void setup() {
 
   delay(1000);
   Serial.begin(9600);	// Debugging only
-  while (!Serial);
+  //  while (!Serial);
   Serial.printf("setup");
 
   // Initialise the IO and ISR
@@ -86,7 +84,6 @@ void setup() {
   vw_set_ptt_pin(transmit_en_pin);
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(2000);	 // Bits per sec
-
   vw_rx_start();       // Start the receiver PLL running
 
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
@@ -95,7 +92,6 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-  
   buttonPress1 = true;
   buttonState1 = false;
   buttonPress2 = true;
@@ -120,8 +116,8 @@ void setup() {
   pinMode(ENCSW, INPUT_PULLUP);
 
   c = 0;
-  w = 0;
   i = 0;
+  w = 0;
 
   position = 0;
   lastPos = 0;
@@ -131,8 +127,8 @@ void setup() {
   delay(200);          //ensure Serial Monitor is up and running
 }
 
-void loop() {  
-  checkMessage();  
+void loop() {
+  checkMessage();
   encoderPos();
   buttonPress1 = digitalRead(HPSSW);
   button1();
@@ -148,28 +144,10 @@ void loop() {
   button6();
   buttonPress7 = digitalRead(ENCSW);
   button7();
-
-
 }
-
 
 void input1(int bufVal) {
   if (bufVal == 0x31) {
-    hueLamp();
-    buttonState1 = !buttonState1;
-    Serial.printf("Hue Lights On/Off\n");
-    delay(DELAY);
-  }
-  if (bufVal == 0x32) {
-    c++;
-    allStatus();
-    if (c > 6) {
-      c = 0;
-      allStatus();
-    }
-    Serial.printf("Hue Color Select. ButtonState2 = %i, i=%i\n", buttonState2,  c);
-  }
-  if (bufVal == 0x33) {
     buttonState3 = !buttonState3;
     if (buttonState3 == true) {
       switchON(w);
@@ -181,25 +159,40 @@ void input1(int bufVal) {
     }
     Serial.printf("WemoPower\n");
   }
-  if (bufVal == 0x34) {
+  if (bufVal == 0x32) {
     w++;
     allStatus();
     if (w > 4) {
       w = 0;
       allStatus();
     }
-    Serial.printf("Wemo%i\n", w);
+    Serial.printf("Wemo%i sleected\n", w);
   }
-  if (bufVal == 0x35) {
-    i++;
+  if (bufVal == 0x33) {
+    for (i = 1; i < 6; i++) {
+      setHue(i, true, RAINBOW[c] , 255, 255);
+      Serial.printf("ALL LIGHTS Cases\n");
+      delay(DELAY);
+    }
+  }
+  if (bufVal == 0x34) {
+    c++;
     allStatus();
-    if (i > 6) {
-      i = 0;
+    if (c > 6) {
+      c = 0;
       allStatus();
     }
-    Serial.printf("Hue Light%i selected\n", i);
+    Serial.printf("Hue Color Select. ButtonState2 = %i, i=%i\n", buttonState2,  c);
+  }
+  if (bufVal == 0x35) {
+    for (i = 1; i < 6; i++) {
+      setHue(i, false, RAINBOW[c] , 0, 0);
+      allStatus();
+    }
+    Serial.printf("All Hue Off\n", i);
   }
 }
+
 void checkMessage() {
   uint8_t buf[VW_MAX_MESSAGE_LEN];
   uint8_t buflen = VW_MAX_MESSAGE_LEN;
@@ -207,9 +200,9 @@ void checkMessage() {
   if (vw_get_message(buf, &buflen)) {
     digitalWrite(LED, HIGH); // Flash a light to show received good message
     // Message with a good checksum received, dump it.
-        Serial.printf("Got: \n");
-        delay(DELAY);
-
+    //    Serial.printf("Got: \n");
+    // Delay allows LED to turn on and off. LED in encoder was not flashing without delay
+    delay(DELAY);
     Serial.printf("%x", buf[0]);
     digitalWrite(LED, LOW);
     input1(buf[0]);
@@ -221,7 +214,7 @@ void button1() {
   if (buttonPress1 == false) {
     hueLamp();
     buttonState1 = !buttonState1;
-    Serial.printf(" %i power on/off \n",  buttonState1);
+    Serial.printf(" Hue Lamp \n");
     delay(DELAY);
   }
   click1();
@@ -237,7 +230,7 @@ void button2() {
     c++;
     allStatus();
     buttonState2 = !buttonState2;
-    Serial.printf("%i Red %i\n", buttonState2, c);
+    Serial.printf("Color change \n");
     delay(DELAY);
     if (c > 6) {
       c = 0;
@@ -256,7 +249,7 @@ void button3() {
   if (buttonPress3 == false) {
     buttonState3 = !buttonState3;
     wemoPower();
-    Serial.printf(" WemoPower %i\n",  buttonState3);
+    Serial.printf(" WemoPower \n");
     delay(DELAY);
   }
   click3();
@@ -272,7 +265,7 @@ void button4() {
     w++;
     allStatus();
     buttonState4 = !buttonState4;
-    Serial.printf("Wemo Select %i\n", w);
+    Serial.printf("Wemo Select \n");
     delay(DELAY);
     if (w > 4) {
       w = 0;
@@ -292,7 +285,7 @@ void button5() {
     i++;
     allStatus();
     buttonState5 = !buttonState5;
-    Serial.printf("%i Hue Select %i\n", buttonState5, i);
+    Serial.printf("Hue Select\n");
     delay(DELAY);
     if (i > 6) {
       i = 1;
@@ -328,8 +321,7 @@ void button7() {
     buttonState7 = !buttonState7;
     allTheLights();
     delay(DELAY);
-    Serial.printf("All lights on/off %i\n", buttonState7);
-
+    Serial.printf("All lights on/off\n", buttonState7);
   }
   click7();
 }
@@ -339,8 +331,8 @@ void click7() {
   }
 }
 
-
-void encoderPos() {  //encoder position and mapping
+//encoder position and mapping. current encoder has 96 readable steps. Max brightness for Hue system is 255.
+void encoderPos() {
   position = myEnc.read();
   if (position < 0) {
     position = 0;
@@ -354,9 +346,8 @@ void encoderPos() {  //encoder position and mapping
     Serial.printf("%i, %i\n", position, briPos);
     lastPos = position;
   }
-  //    hueLamp();
 }
-
+//    hueLamp(); //Enabling this function allows you adjust the brightness of the lamps "live". There is a noticable delay and this will cause you to flood your hue system.
 void hueLamp() {
   setHue(i, buttonState1, RAINBOW[c], briPos, 255);
   if (buttonState1 == false) {
@@ -367,6 +358,7 @@ void hueLamp() {
   }
 }
 
+//This is connected to a tilt mercury switch that can be triggered by large vibration or by a slight shake.
 void calmDown() {
   for (i = 1; i < 6; i++) {
     setHue(i, buttonState6, HueBlue, 255, 255);
@@ -377,11 +369,12 @@ void calmDown() {
     }
   }
 }
+
 void allTheLights() {
   for (i = 1; i < 6; i++) {
     setHue(i, buttonState7, RAINBOW[c] , briPos, 0);
     if (buttonState7 == false) {
-      calmDownStatus();
+      allStatus();
     }
     else {
     }
@@ -397,9 +390,9 @@ void wemoPower() {
     switchOFF(w);
     allStatus();
   }
-
 }
 
+//for the current OLED screen, if you want live consistent updates, you need to have this function placed in every action. The OLED does not clear individual pixels, only the whole screen.
 void allStatus() {
   Serial.printf(" Hue %i selected\n Hue color %i selected\n Hue %i %i\n Hue Brightness %i\n Wemo %i selected\n Wemo %i %i\n", i, c, i, buttonState1, briPos, w, w, buttonState3);
   display.clearDisplay();
